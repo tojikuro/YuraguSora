@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ユラグソラ | VIRTUAL ROCK ARTIST</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* ノイズエフェクト */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* ヘッダー */
+        .header {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600'%3E%3Cdefs%3E%3Cfilter id='crack'%3E%3CfeTurbulence baseFrequency='0.02' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='%23000'/%3E%3Cpath d='M0,300 Q300,100 600,300 T1200,300' stroke='%23333' stroke-width='2' fill='none' filter='url(%23crack)'/%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+
+        .header-media {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
+        .header-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .header-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .logo-container {
+            text-align: center;
+            animation: glitchIn 2s ease-out;
+            z-index: 2;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            opacity: 0.8;
+            letter-spacing: 0.1em;
+        }
+
+        .concept {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        /* アニメーション */
+        @keyframes glitchIn {
+            0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(2deg); opacity: 0.7; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Scroll Down アニメーション */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            text-align: center;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+
+        .scroll-indicator:hover {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-5px);
+        }
+
+        .scroll-text {
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            color: #4ecdc4;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .scroll-arrow {
+            width: 30px;
+            height: 50px;
+            border: 2px solid #ff6b6b;
+            border-radius: 20px;
+            position: relative;
+            margin: 0 auto;
+            animation: scrollBounce 2s infinite;
+        }
+
+        .scroll-arrow::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            animation: scrollDot 2s infinite;
+        }
+
+        .scroll-chevron {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #4ecdc4;
+            animation: chevronPulse 2s infinite;
+        }
+
+        @keyframes scrollBounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes scrollDot {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(30px);
+            }
+        }
+
+        @keyframes chevronPulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ナビゲーション */
+        .nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #ff6b6b;
+        }
+
+        /* メインコンテンツ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            margin: 4rem 0;
+            opacity: 0;
+            transform: translateY(50px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        .section:nth-child(2) { animation-delay: 0.2s; }
+        .section:nth-child(3) { animation-delay: 0.4s; }
+        .section:nth-child(4) { animation-delay: 0.6s; }
+        .section:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #4ecdc4;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+            color: #ff6b6b;
+        }
+
+        /* News セクション */
+        .news-list {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .news-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .news-item:last-child {
+            border-bottom: none;
+        }
+
+        .news-item:hover {
+            padding-left: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .news-date {
+            color: #4ecdc4;
+            font-size: 0.9rem;
+            font-weight: bold;
+            min-width: 100px;
+        }
+
+        .news-content {
+            flex: 1;
+            margin-left: 2rem;
+        }
+
+        .news-category {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: #000;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-right: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* ディスコグラフィー */
+        .discography {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .album {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .album::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .album-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .album:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.3);
+        }
+
+        .album-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #ff6b6b;
+        }
+
+        .album-type {
+            font-size: 0.9rem;
+            color: #4ecdc4;
+            margin-bottom: 1rem;
+        }
+
+        /* 音楽配信サービスリンク */
+        .streaming-links {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .streaming-link {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .streaming-link:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .streaming-link[data-service="spotify"]:hover {
+            background: #1db954;
+        }
+
+        .streaming-link[data-service="apple"]:hover {
+            background: linear-gradient(45deg, #fa243c, #fb5d73);
+        }
+
+        .streaming-link[data-service="youtube"]:hover {
+            background: #ff0000;
+        }
+
+        /* 歌詞リンク */
+        .lyrics-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1.5rem;
+            background: transparent;
+            border: 1px solid #ff6b6b;
+            border-radius: 20px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lyrics-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #ff6b6b;
+            transition: left 0.3s;
+            z-index: -1;
+        }
+
+        .lyrics-link:hover::before {
+            left: 0;
+        }
+
+        .lyrics-link:hover {
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* More ボタン */
+        .more-button-container {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+        }
+
+        .more-button, .view-all-button {
+            background: transparent;
+            border: 2px solid transparent;
+            background-image: linear-gradient(#0a0a0a, #0a0a0a),
+                              linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            padding: 1.2rem 3rem;
+            border-radius: 50px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+        }
+
+        .more-button::before, .view-all-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .more-button:hover::before, .view-all-button:hover::before {
+            left: 100%;
+        }
+
+        .more-button:hover, .view-all-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(78, 205, 196, 0.4),
+                        0 5px 15px rgba(255, 107, 107, 0.3);
+            letter-spacing: 0.15em;
+        }
+
+        /* プロフィール */
+        .profile-container {
+            display: flex;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .profile-left {
+            flex: 0 0 300px;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            background-image: url('img/yuragusora-profile.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* SNSリンク */
+        .sns-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            padding: 1rem;
+        }
+
+        .sns-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sns-link:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sns-link[data-platform="twitter"]:hover {
+            background: #1da1f2;
+            box-shadow: 0 10px 30px rgba(29, 161, 242, 0.4);
+        }
+
+        .sns-link[data-platform="instagram"]:hover {
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            box-shadow: 0 10px 30px rgba(225, 48, 108, 0.4);
+        }
+
+        .sns-link[data-platform="tiktok"]:hover {
+            background: #000000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .profile-details {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-item {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-label {
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-value {
+            line-height: 1.6;
+        }
+
+        /* ブログセクション */
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .blog-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.2);
+        }
+
+        .blog-thumbnail {
+            height: 200px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #666;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .blog-content {
+            padding: 1.5rem;
+        }
+
+        .blog-date {
+            color: #4ecdc4;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .blog-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #ff6b6b;
+        }
+
+        .blog-excerpt {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        /* スケジュール */
+        .schedule-list {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .schedule-item {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 2rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
+        }
+
+        .schedule-item:last-child {
+            border-bottom: none;
+        }
+
+        .schedule-date {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .schedule-details h4 {
+            margin-bottom: 0.5rem;
+            color: #ff6b6b;
+        }
+
+        .schedule-location {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .schedule-link {
+            padding: 0.5rem 1.5rem;
+            background: transparent;
+            border: 1px solid #4ecdc4;
+            border-radius: 20px;
+            color: #4ecdc4;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .schedule-link:hover {
+            background: #4ecdc4;
+            color: #000;
+        }
+
+        /* ストリームアーカイブ */
+        .stream-archive {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .stream-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .stream-card:hover {
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ギャラリー */
+        .gallery-scroll {
+            position: relative;
+            overflow-x: auto;
+            padding: 2rem 0;
+        }
+
+        .gallery-container {
+            display: flex;
+            gap: 1.5rem;
+            padding-bottom: 1rem;
+        }
+
+        .gallery-item {
+            flex: 0 0 300px;
+            height: 400px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            color: #fff;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover .gallery-caption {
+            transform: translateY(0);
+        }
+
+        /* スクロールバーのスタイリング */
+        .gallery-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .gallery-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .gallery-scroll::-webkit-scrollbar-thumb {
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            border-radius: 4px;
+        }
+
+        /* インタビューセクション */
+        .interview-container {
+            margin-top: 2rem;
+        }
+
+        .interview-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .interview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transition: left 0.6s;
+        }
+
+        .interview-card:hover::before {
+            left: 100%;
+        }
+
+        .interview-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 107, 107, 0.3);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.2);
+        }
+
+        .interview-card.featured {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.05));
+            border-color: rgba(255, 107, 107, 0.3);
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .interview-card.featured::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('img/Interview.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.15;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .interview-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .interview-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .interview-date {
+            color: #4ecdc4;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .interview-tag {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .featured-tag {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: #000;
+        }
+
+        .video-tag {
+            background: #ff0000;
+            color: #fff;
+        }
+
+        .text-tag {
+            background: #4ecdc4;
+            color: #000;
+        }
+
+        .podcast-tag {
+            background: #9b59b6;
+            color: #fff;
+        }
+
+        .interview-title {
+            font-size: 1.4rem;
+            color: #ff6b6b;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        .interview-card.featured .interview-title {
+            font-size: 1.8rem;
+        }
+
+        .interview-card h4.interview-title {
+            font-size: 1.2rem;
+        }
+
+        .interview-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .interview-excerpt {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 1.5rem;
+        }
+
+        .interview-quotes {
+            margin: 2rem 0;
+        }
+
+        .interview-quotes blockquote {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid #ff6b6b;
+            padding: 1.5rem 2rem;
+            margin: 0;
+            font-style: italic;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            border-radius: 0 10px 10px 0;
+            position: relative;
+        }
+
+        .interview-quotes blockquote::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            font-size: 3rem;
+            color: #ff6b6b;
+            opacity: 0.3;
+        }
+
+        .interview-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4ecdc4;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            padding: 0.5rem 0;
+        }
+
+        .interview-link:hover {
+            color: #ff6b6b;
+            gap: 0.8rem;
+        }
+
+        .interview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .interview-grid .interview-card {
+            margin-bottom: 0;
+        }
+
+        /* 準備中セクション */
+        .coming-soon {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .coming-soon-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Contact フォーム */
+        .contact-form {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .submit-button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            color: #000;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .profile-container {
+                flex-direction: column;
+            }
+            
+            .profile-left {
+                flex: 0 0 auto;
+                width: 100%;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+
+            .schedule-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .gallery-item {
+                flex: 0 0 250px;
+                height: 330px;
+            }
+
+            .interview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .interview-card {
+                padding: 1.5rem;
+            }
+
+            .interview-card.featured .interview-title {
+                font-size: 1.4rem;
+            }
+
+            .interview-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+
+        /* スクロールバー */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="nav-logo">ユラグソラ</div>
+            <div class="nav-links">
+                <a href="#news">ニュース</a>
+                <a href="#discography">ディスコグラフィー</a>
+                <a href="#profile">プロフィール</a>
+                <a href="#schedule">スケジュール</a>
+                <a href="#gallery">ギャラリー</a>
+                <a href="#interview">インタビュー</a>
+                <a href="#contact">コンタクト</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="header">
+        <div class="header-media">
+            <video class="header-video" autoplay muted loop>
+                <source src="header-video.mp4" type="video/mp4">
+            </video>
+            <img class="header-image" src="img/header-image.png" alt="ユラグソラ ヘッダー画像">
+        </div>
+        <div class="logo-container">
+            <h1 class="logo">ユラグソラ</h1>
+            <p class="tagline">VIRTUAL ROCK SINGER</p>
+            <p class="concept">暗い部屋から叫び続ける</p>
+        </div>
+        <div class="scroll-indicator" onclick="smoothScrollToSection('#news')">
+            <div class="scroll-text">Scroll Down</div>
+            <div class="scroll-arrow">
+                <div class="scroll-chevron"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- News Section -->
+        <section class="section" id="news">
+            <h2 class="section-title">NEWS</h2>
+            <div class="news-list">
+                <div class="news-item">
+                    <div class="news-date">2025.01.15</div>
+                    <div class="news-content">
+                        <span class="news-category">Release</span>
+                        新曲「カナシミグライダー」配信開始
+                    </div>
+                </div>
+                <div class="news-item">
+                    <div class="news-date">2025.01.10</div>
+                    <div class="news-content">
+                        <span class="news-category">Live</span>
+                        バーチャルライブ「DARK RESONANCE」開催決定
+                    </div>
+                </div>
+                <div class="news-item">
+                    <div class="news-date">2024.12.25</div>
+                    <div class="news-content">
+                        <span class="news-category">Media</span>
+                        音楽雑誌「ROCK HEAVEN」インタビュー掲載
+                    </div>
+                </div>
+                <div class="news-item">
+                    <div class="news-date">2024.12.20</div>
+                    <div class="news-content">
+                        <span class="news-category">Collab</span>
+                        人気VTuberとのコラボ楽曲制作発表
+                    </div>
+                </div>
+                <div class="news-item">
+                    <div class="news-date">2024.12.15</div>
+                    <div class="news-content">
+                        <span class="news-category">Release</span>
+                        1st EP「虚像の足音」リリース決定
+                    </div>
+                </div>
+            </div>
+            <div class="more-button-container">
+                <a href="#" class="view-all-button">
+                    <span>View All News</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+        <!-- Discography Section -->
+        <section class="section" id="discography">
+            <h2 class="section-title">DISCOGRAPHY</h2>
+            <div class="discography">
+                
+                <div class="album yuragusora">
+                    <div class="album-content">
+                        <h3 class="album-title">ユラグソラ</h3>
+                        <p class="album-type">デビューシングル</p>
+                        <p>バーチャル・シンガー「ユラグソラ」のデビュー作品。自身の名と同じタイトルを冠し、彼女の世界観と鋭い歌声を表現した記念すべき第一作。</p>
+                        
+                        <div class="streaming-links">
+                            <a href="#" class="streaming-link" data-service="spotify" title="Spotify">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="streaming-link" data-service="apple" title="Apple Music">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.07 1.632-.226 2.388-.566 1.535-.69 2.512-1.843 2.92-3.46.228-.92.236-1.85.236-2.78V6.126l-.006-.002zM16.99 13.45c0 1.35-.008 2.7.002 4.048-.008.523-.047 1.04-.175 1.54-.267 1.01-.966 1.665-1.985 1.94-.483.128-.987.148-1.485.12-.673-.043-1.3-.238-1.824-.65-.644-.506-.954-1.197-.955-2.02 0-.864.362-1.554 1.04-2.052.604-.444 1.322-.653 2.063-.743.827-.1 1.655-.1 2.482-.16.14-.01.28-.023.418-.04v-.983c0-.812.003-1.623-.002-2.435a.917.917 0 00-.13-.516c-.206-.342-.57-.494-.952-.463-.727.057-1.446.16-2.146.368-1.13.336-2.236.743-3.342 1.15-.078.03-.152.064-.23.095v6.522c-.002.51-.03 1.017-.15 1.51-.276 1.14-1.08 1.887-2.257 2.12-.496.098-1 .104-1.502.05-.815-.09-1.565-.35-2.134-.925-.607-.613-.844-1.364-.786-2.2.062-.885.518-1.573 1.27-2.004.59-.338 1.26-.497 1.95-.578.79-.092 1.58-.092 2.37-.137.112-.006.224-.02.335-.033v-7.82c0-.16.02-.322.045-.48.133-.79.632-1.345 1.422-1.53.206-.05.42-.062.632-.08 1.158-.09 2.3.168 3.435.394 1.393.278 2.774.605 4.13 1.046.203.066.398.148.58.263.5.316.788.773.81 1.377.006.143.003.287.003.43v7.84z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="streaming-link" data-service="youtube" title="YouTube Music">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                            </a>
+                        </div>
+                        
+                        <a href="#" class="lyrics-link">
+                            <span>🎵 View Lyrics</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="album kakureoto">
+                    <div class="album-content">
+                        <h3 class="album-title">カクレオト</h3>
+                        <p class="album-type">シングル</p>
+                        <p>隠れた音、聞こえない声をテーマにした楽曲。内向的な心情を激しいロックサウンドで表現。</p>
+                        
+                        <div class="streaming-links">
+                            <a href="#" class="streaming-link" data-service="spotify" title="Spotify">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="streaming-link" data-service="apple" title="Apple Music">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.07 1.632-.226 2.388-.566 1.535-.69 2.512-1.843 2.92-3.46.228-.92.236-1.85.236-2.78V6.126l-.006-.002zM16.99 13.45c0 1.35-.008 2.7.002 4.048-.008.523-.047 1.04-.175 1.54-.267 1.01-.966 1.665-1.985 1.94-.483.128-.987.148-1.485.12-.673-.043-1.3-.238-1.824-.65-.644-.506-.954-1.197-.955-2.02 0-.864.362-1.554 1.04-2.052.604-.444 1.322-.653 2.063-.743.827-.1 1.655-.1 2.482-.16.14-.01.28-.023.418-.04v-.983c0-.812.003-1.623-.002-2.435a.917.917 0 00-.13-.516c-.206-.342-.57-.494-.952-.463-.727.057-1.446.16-2.146.368-1.13.336-2.236.743-3.342 1.15-.078.03-.152.064-.23.095v6.522c-.002.51-.03 1.017-.15 1.51-.276 1.14-1.08 1.887-2.257 2.12-.496.098-1 .104-1.502.05-.815-.09-1.565-.35-2.134-.925-.607-.613-.844-1.364-.786-2.2.062-.885.518-1.573 1.27-2.004.59-.338 1.26-.497 1.95-.578.79-.092 1.58-.092 2.37-.137.112-.006.224-.02.335-.033v-7.82c0-.16.02-.322.045-.48.133-.79.632-1.345 1.422-1.53.206-.05.42-.062.632-.08 1.158-.09 2.3.168 3.435.394 1.393.278 2.774.605 4.13 1.046.203.066.398.148.58.263.5.316.788.773.81 1.377.006.143.003.287.003.43v7.84z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="streaming-link" data-service="youtube" title="YouTube Music">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                            </a>
+                        </div>
+                        
+                        <a href="#" class="lyrics-link">
+                            <span>🎵 View Lyrics</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="album yorugren">
+                    <div class="album-content">
+                        <h3 class="album-title">ヨルグレン</h3>
+                        <p class="album-type">シングル</p>
+                        <p>夜明け前の憂鬱と希望を歌った、ダークで美しいロック。</p>
+                        
+                        <div class="streaming-links">
+                            <a href="#" class="streaming-link" data-service="spotify" title="Spotify">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="streaming-link" data-service="apple" title="Apple Music">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.07 1.632-.226 2.388-.566 1.535-.69 2.512-1.843 2.92-3.46.228-.92.236-1.85.236-2.78V6.126l-.006-.002zM16.99 13.45c0 1.35-.008 2.7.002 4.048-.008.523-.047 1.04-.175 1.54-.267 1.01-.966 1.665-1.985 1.94-.483.128-.987.148-1.485.12-.673-.043-1.3-.238-1.824-.65-.644-.506-.954-1.197-.955-2.02 0-.864.362-1.554 1.04-2.052.604-.444 1.322-.653 2.063-.743.827-.1 1.655-.1 2.482-.16.14-.01.28-.023.418-.04v-.983c0-.812.003-1.623-.002-2.435a.917.917 0 00-.13-.516c-.206-.342-.57-.494-.952-.463-.727.057-1.446.16-2.146.368-1.13.336-2.236.743-3.342 1.15-.078.03-.152.064-.23.095v6.522c-.002.51-.03 1.017-.15 1.51-.276 1.14-1.08 1.887-2.257 2.12-.496.098-1 .104-1.502.05-.815-.09-1.565-.35-2.134-.925-.607-.613-.844-1.364-.786-2.2.062-.885.518-1.573 1.27-2.004.59-.338 1.26-.497 1.95-.578.79-.092 1.58-.092 2.37-.137.112-.006.224-.02.335-.033v-7.82c0-.16.02-.322.045-.48.133-.79.632-1.345 1.422-1.53.206-.05.42-.062.632-.08 1.158-.09 2.3.168 3.435.394 1.393.278 2.774.605 4.13 1.046.203.066.398.148.58.263.5.316.788.773.81 1.377.006.143.003.287.003.43v7.84z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="streaming-link" data-service="youtube" title="YouTube Music">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                            </a>
+                        </div>
+                        
+                        <a href="#" class="lyrics-link">
+                            <span>🎵 View Lyrics</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="more-button-container">
+                <button class="more-button">
+                    <span>More</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section class="section" id="profile">
+            <h2 class="section-title">PROFILE</h2>
+            <div class="profile-container">
+                <div class="profile-left">
+                    <div class="profile-image">
+                        <div class="profile-placeholder" style="display: none;">
+                            黒髪ロング、前髪長めの15歳<br>
+                            ダークで内向的な雰囲気
+                        </div>
+                    </div>
+                    <div class="sns-links">
+                        <a href="#" class="sns-link" data-platform="twitter">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="sns-link" data-platform="instagram">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="sns-link" data-platform="tiktok">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="profile-details">
+                    <div class="profile-item">
+                        <div class="profile-label">年齢</div>
+                        <div class="profile-value">15歳</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">性格</div>
+                        <div class="profile-value">暗い、ネガティブ、怖がり、泣き虫、気弱、人見知り</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">歌う理由</div>
+                        <div class="profile-value">話すのが苦手なので歌で自己表現をしています。</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">影響を受けたアーティスト</div>
+                        <div class="profile-value">
+                            • Alia<br>
+                            • My First Story<br>
+                            • 岸田教団&THE明星ロケッツ<br>
+                            • EGOIST
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blog Section (integrated into Profile) -->
+            <h3>BLOG</h3>
+            <div class="blog-grid">
+                <div class="blog-card">
+                    <div class="blog-thumbnail">
+                        <span>Text Only</span>
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-date">2025.01.12</div>
+                        <div class="blog-title">深夜の制作部屋から</div>
+                        <div class="blog-excerpt">
+                            また今日も夜更かししてしまった。新曲のメロディが頭から離れなくて、気がついたら朝の4時。窓の外がうっすら明るくなってきた...
+                        </div>
+                    </div>
+                </div>
+                <div class="blog-card">
+                    <div class="blog-thumbnail" style="background-image: url('img/blog-image-1.png'); background-size: cover; background-position: center;">
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-date">2025.01.08</div>
+                        <div class="blog-title">カナシミグライダーの裏話</div>
+                        <div class="blog-excerpt">
+                            この曲を作るきっかけになったのは、ある雨の日のこと。傘を忘れて、ずぶ濡れになりながら歩いていたら...
+                        </div>
+                    </div>
+                </div>
+                <div class="blog-card">
+                    <div class="blog-thumbnail">
+                        <span>Text Only</span>
+                    </div>
+                    <div class="blog-content">
+                        <div class="blog-date">2024.12.28</div>
+                        <div class="blog-title">年末に思うこと</div>
+                        <div class="blog-excerpt">
+                            今年もあと少し。振り返ると、デビューしてから色々なことがあった。正直、まだ実感が湧かない部分もあるけど...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="more-button-container">
+                <a href="#" class="view-all-button">
+                    <span>View All Posts</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+        <!-- Schedule Section -->
+        <section class="section" id="schedule">
+            <h2 class="section-title">SCHEDULE</h2>
+            <div class="schedule-list">
+                <div class="schedule-item">
+                    <div class="schedule-date">2025.02.14</div>
+                    <div class="schedule-details">
+                        <h4>Valentine Special Live「Dark Chocolate」</h4>
+                        <p class="schedule-location">Virtual Stage - YouTube Live</p>
+                    </div>
+                    <a href="#" class="schedule-link">Details</a>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-date">2025.01.31</div>
+                    <div class="schedule-details">
+                        <h4>定期配信 #42</h4>
+                        <p class="schedule-location">YouTube Live - 21:00 JST</p>
+                    </div>
+                    <a href="#" class="schedule-link">Reminder</a>
+                </div>
+                <div class="schedule-item">
+                    <div class="schedule-date">2025.01.25</div>
+                    <div class="schedule-details">
+                        <h4>コラボ配信 with 霧雨レイ</h4>
+                        <p class="schedule-location">Twitch - 20:00 JST</p>
+                    </div>
+                    <a href="#" class="schedule-link">Watch</a>
+                </div>
+            </div>
+
+            <h3>STREAM ARCHIVE</h3>
+            <div class="stream-archive">
+                <div class="stream-card">
+                    <div class="stream-date">2025.01.10</div>
+                    <div class="stream-title">歌枠配信 - Acoustic Night</div>
+                    <div class="stream-views">👁️ 2.3K views</div>
+                </div>
+                <div class="stream-card">
+                    <div class="stream-date">2024.12.31</div>
+                    <div class="stream-title">年越しカウントダウン配信</div>
+                    <div class="stream-views">👁️ 5.8K views</div>
+                </div>
+                <div class="stream-card">
+                    <div class="stream-date">2024.12.24</div>
+                    <div class="stream-title">Christmas Special - 弾き語り</div>
+                    <div class="stream-views">👁️ 3.1K views</div>
+                </div>
+            </div>
+            <div class="more-button-container">
+                <a href="#" class="view-all-button">
+                    <span>View All Archives</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+        <!-- Gallery Section -->
+        <section class="section" id="gallery">
+            <h2 class="section-title">GALLERY</h2>
+            <div class="gallery-scroll">
+                <div class="gallery-container">
+                    <div class="gallery-item">
+                        <img src="img/gallery-1.png" alt="ユラグソラ ライブ写真">
+                        <div class="gallery-caption">
+                            <p>Dark Resonance Live 2025</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="img/gallery-3.png" alt="ユラグソラ スタジオ">
+                        <div class="gallery-caption">
+                            <p>Recording Session</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="img/gallery-4.png" alt="ユラグソラ MV撮影">
+                        <div class="gallery-caption">
+                            <p>MV Shooting - カナシミグライダー</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <img src="img/gallery-5.png" alt="ユラグソラ オフショット">
+                        <div class="gallery-caption">
+                            <p>Off Shot</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="more-button-container">
+                <a href="#" class="view-all-button">
+                    <span>View All Photos</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+        <!-- Interview Section -->
+        <section class="section" id="interview">
+            <h2 class="section-title">INTERVIEW</h2>
+            <div class="interview-container">
+                <div class="interview-card featured">
+                    <div class="interview-header">
+                        <div class="interview-meta">
+                            <span class="interview-date">2025.01.08</span>
+                            <span class="interview-tag featured-tag">FEATURED</span>
+                        </div>
+                        <h3 class="interview-title">「暗い部屋から叫び続ける理由」- ROCK HEAVEN Magazine</h3>
+                    </div>
+                    <div class="interview-content">
+                        <div class="interview-excerpt">
+                            デビューから半年、バーチャル・ロック・シンガー「ユラグソラ」が初めて語る本音とは。内向的な性格と激しい楽曲のギャップ、そして歌に込める想いについて...
+                        </div>
+                        <div class="interview-quotes">
+                            <blockquote>
+                                「話すのは苦手だけど、歌だと本当の気持ちを伝えられる。暗い感情も、全部音楽にして外に出したいんです」
+                            </blockquote>
+                        </div>
+                        <a href="#" class="interview-link">
+                            <span>Read Full Interview</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="interview-grid">
+                    <div class="interview-card">
+                        <div class="interview-header">
+                            <div class="interview-meta">
+                                <span class="interview-date">2024.12.20</span>
+                                <span class="interview-tag video-tag">VIDEO</span>
+                            </div>
+                            <h4 class="interview-title">VTuber Spotlight - 音楽への想い</h4>
+                        </div>
+                        <div class="interview-content">
+                            <div class="interview-excerpt">
+                                人気音楽番組での初出演インタビュー。緊張しながらも音楽への純粋な想いを語る姿が印象的だった...
+                            </div>
+                            <a href="#" class="interview-link">
+                                <span>Watch Interview</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="interview-card">
+                        <div class="interview-header">
+                            <div class="interview-meta">
+                                <span class="interview-date">2024.11.30</span>
+                                <span class="interview-tag text-tag">TEXT</span>
+                            </div>
+                            <h4 class="interview-title">新人VTuberが語る「リアル」とは</h4>
+                        </div>
+                        <div class="interview-content">
+                            <div class="interview-excerpt">
+                                バーチャルでありながら「リアル」な感情を歌に込める理由。15歳の等身大の想いが詰まったインタビュー...
+                            </div>
+                            <a href="#" class="interview-link">
+                                <span>Read More</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="interview-card">
+                        <div class="interview-header">
+                            <div class="interview-meta">
+                                <span class="interview-date">2024.11.15</span>
+                                <span class="interview-tag podcast-tag">PODCAST</span>
+                            </div>
+                            <h4 class="interview-title">Deep Talk - 創作の裏側</h4>
+                        </div>
+                        <div class="interview-content">
+                            <div class="interview-excerpt">
+                                楽曲制作の舞台裏から、普段は見せない素顔まで。1時間にわたる深いトークセッション...
+                            </div>
+                            <a href="#" class="interview-link">
+                                <span>Listen Now</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.5 14.5V9.5l5 2.5-5 2.5z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="interview-card">
+                        <div class="interview-header">
+                            <div class="interview-meta">
+                                <span class="interview-date">2024.10.28</span>
+                                <span class="interview-tag text-tag">TEXT</span>
+                            </div>
+                            <h4 class="interview-title">デビュー記念ロングインタビュー</h4>
+                        </div>
+                        <div class="interview-content">
+                            <div class="interview-excerpt">
+                                「ユラグソラ」として歩み始めた理由、これから目指していきたい音楽について語る記念すべき初インタビュー...
+                            </div>
+                            <a href="#" class="interview-link">
+                                <span>Read More</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="more-button-container">
+                <a href="#" class="view-all-button">
+                    <span>View All Interviews</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+        <!-- Merchandise Section -->
+        <section class="section" id="merchandise">
+            <h2 class="section-title">MERCHANDISE</h2>
+            <div class="coming-soon">
+                <div class="coming-soon-icon">🛍️</div>
+                <h3>Coming Soon</h3>
+                <p>オリジナルグッズを準備中です。<br>もう少しお待ちください。</p>
+            </div>
+        </section>
+
+        <!-- Press Kit Section -->
+        <section class="section" id="press-kit">
+            <h2 class="section-title">PRESS KIT</h2>
+            <div class="coming-soon">
+                <div class="coming-soon-icon">📋</div>
+                <h3>Coming Soon</h3>
+                <p>メディア関係者向け資料を準備中です。<br>お問い合わせは下記コンタクトフォームよりお願いします。</p>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="section" id="contact">
+            <h2 class="section-title">CONTACT</h2>
+            <div class="contact-form">
+                <form>
+                    <div class="form-group">
+                        <label for="contact-type">お問い合わせ種別</label>
+                        <select id="contact-type" name="contact-type">
+                            <option value="">選択してください</option>
+                            <option value="fan-letter">ファンレター</option>
+                            <option value="business">仕事のお問い合わせ</option>
+                            <option value="media">メディアのお問い合わせ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">メッセージ</label>
+                        <textarea id="message" name="message" placeholder="お問い合わせ内容をご記入ください"></textarea>
+                    </div>
+                    <button type="submit" class="submit-button">送信</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ヘッダーメディアの制御
+        document.addEventListener('DOMContentLoaded', () => {
+            const headerVideo = document.querySelector('.header-video');
+            const headerImage = document.querySelector('.header-image');
+
+            // 動画が正常に読み込まれた場合のみ動画を表示
+            headerVideo.addEventListener('canplaythrough', () => {
+                headerVideo.style.display = 'block';
+                headerImage.style.display = 'none';
+                headerVideo.play().catch(() => {
+                    // 自動再生に失敗した場合は画像に戻す
+                    headerVideo.style.display = 'none';
+                    headerImage.style.display = 'block';
+                });
+            });
+
+            // 動画読み込みエラーの場合は画像のまま
+            headerVideo.addEventListener('error', () => {
+                console.log('動画読み込みエラー: header-video.mp4が見つかりません');
+                headerVideo.style.display = 'none';
+                headerImage.style.display = 'block';
+            });
+
+            // 画像読み込みエラーの場合はデフォルト背景
+            headerImage.addEventListener('error', () => {
+                console.log('画像読み込みエラー: img/header-image.pngが見つかりません');
+                headerImage.style.display = 'none';
+                document.querySelector('.header-media').style.display = 'none';
+            });
+        });
+
+        // スムーススクロール機能
+        function smoothScrollToSection(target) {
+            document.querySelector(target).scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // スクロールでScroll Downインジケーターを非表示
+        let scrollTimer = null;
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const header = document.querySelector('.header');
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            
+            // パララックス効果
+            if (header) {
+                header.style.transform = `translateY(${scrolled * 0.5}px)`;
+            }
+            
+            // スクロールインジケーター制御
+            if (scrollIndicator) {
+                if (scrolled > 100) {
+                    scrollIndicator.style.opacity = '0';
+                    scrollIndicator.style.pointerEvents = 'none';
+                } else {
+                    scrollIndicator.style.opacity = '0.8';
+                    scrollIndicator.style.pointerEvents = 'auto';
+                }
+            }
+        });
+
+        // グリッチエフェクト（ランダム）
+        setInterval(() => {
+            const logo = document.querySelector('.logo');
+            if (Math.random() < 0.1) {
+                logo.style.textShadow = '2px 0 #ff6b6b, -2px 0 #4ecdc4';
+                setTimeout(() => {
+                    logo.style.textShadow = '0 0 30px rgba(255, 255, 255, 0.5)';
+                }, 100);
+            }
+        }, 2000);
+
+        // ギャラリーのスムーススクロール
+        const gallery = document.querySelector('.gallery-scroll');
+        if (gallery) {
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            gallery.addEventListener('mousedown', (e) => {
+                isDown = true;
+                startX = e.pageX - gallery.offsetLeft;
+                scrollLeft = gallery.scrollLeft;
+                gallery.style.cursor = 'grabbing';
+            });
+
+            gallery.addEventListener('mouseleave', () => {
+                isDown = false;
+                gallery.style.cursor = 'grab';
+            });
+
+            gallery.addEventListener('mouseup', () => {
+                isDown = false;
+                gallery.style.cursor = 'grab';
+            });
+
+            gallery.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - gallery.offsetLeft;
+                const walk = (x - startX) * 2;
+                gallery.scrollLeft = scrollLeft - walk;
+            });
+        }
+
+        // フォーム送信のダミー処理
+        const form = document.querySelector('.contact-form form');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('お問い合わせありがとうございます。\n後日担当者よりご連絡させていただきます。');
+                form.reset();
+            });
+        }
+    </script>
+</body>
